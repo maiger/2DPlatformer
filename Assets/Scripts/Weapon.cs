@@ -5,7 +5,7 @@ using UnityEngine;
 public class Weapon : MonoBehaviour {
 
     public float fireRate = 0;
-    public float Damage = 10;
+    public int Damage = 10;
     public LayerMask whatToHit;
 
     public Transform BulletTrailPrefab;
@@ -61,7 +61,13 @@ public class Weapon : MonoBehaviour {
         if(hit.collider != null)
         {
             Debug.DrawLine(firePointPosition, hit.point, Color.red);
-            Debug.Log("We hit " + hit.collider.name + " and did " + Damage + " damage.");
+            Enemy enemy = hit.collider.GetComponent<Enemy>();
+            if(enemy != null)
+            {
+                enemy.DamageEnemy(Damage);
+                Debug.Log("We hit " + hit.collider.name + " and did " + Damage + " damage.");
+            }
+
         }
     }
 

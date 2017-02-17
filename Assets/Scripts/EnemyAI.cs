@@ -30,6 +30,8 @@ public class EnemyAI : MonoBehaviour {
 
     private int currentWaypoint = 0;
 
+    private bool searchingForPlayer = false;
+
     void Start()
     {
         seeker = GetComponent<Seeker>();
@@ -37,7 +39,12 @@ public class EnemyAI : MonoBehaviour {
 
         if(target == null)
         {
-            Debug.LogError("Np player found!");
+            if(searchingForPlayer == false)
+            {
+                searchingForPlayer = true;
+                StartCoroutine(SearchForPlayer());
+            }
+            return;
         }
 
         seeker.StartPath(transform.position, target.position, OnPathComplete);
@@ -45,11 +52,32 @@ public class EnemyAI : MonoBehaviour {
         StartCoroutine(UpdatePath());
     }
 
+    IEnumerator SearchForPlayer()
+    {
+        GameObject sResult = GameObject.FindGameObjectWithTag("Player");
+        if(sResult == null)
+        {
+            yield return new WaitForSeconds(0.5f);
+            StartCoroutine(SearchForPlayer());
+        } else
+        {
+            target = sResult.transform;
+            searchingForPlayer = false;
+            StartCoroutine(UpdatePath());
+            yield return false;
+        }
+    }
+
     IEnumerator UpdatePath()
     {
-        if(target == null)
+        if (target == null)
         {
-            yield break;
+            if (searchingForPlayer == false)
+            {
+                searchingForPlayer = true;
+                StartCoroutine(SearchForPlayer());
+            }
+            yield return false;
         }
 
         seeker.StartPath(transform.position, target.position, OnPathComplete);
@@ -72,12 +100,17 @@ public class EnemyAI : MonoBehaviour {
     {
         if (target == null)
         {
+            if (searchingForPlayer == false)
+            {
+                searchingForPlayer = true;
+                StartCoroutine(SearchForPlayer());
+            }
             return;
         }
 
         // TODO: Always look at player
 
-        if(path == null)
+        if (path == null)
         {
             return;
         }
