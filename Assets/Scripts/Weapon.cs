@@ -51,11 +51,7 @@ public class Weapon : MonoBehaviour {
         Vector2 firePointPosition = new Vector2(firePoint.position.x, firePoint.position.y);
 
         RaycastHit2D hit = Physics2D.Raycast(firePointPosition, mousePosition - firePointPosition, 100, whatToHit);
-        if(Time.time >= timeToSpawnEffect)
-        {
-            Effect();
-            timeToSpawnEffect = Time.time + 1 / effectSpawnRate;
-        }
+        
         Debug.DrawLine(firePointPosition, (mousePosition - firePointPosition) * 100, Color.cyan);
 
         if(hit.collider != null)
@@ -69,11 +65,37 @@ public class Weapon : MonoBehaviour {
             }
 
         }
+
+        if (Time.time >= timeToSpawnEffect)
+        {
+            Vector3 hitPos;
+
+            if(hit.collider == null)
+            {
+                hitPos = (mousePosition - firePointPosition) * 30;
+            } else
+            {
+                hitPos = hit.point;
+            }
+
+            Effect(hitPos);
+            timeToSpawnEffect = Time.time + 1 / effectSpawnRate;
+        }
     }
 
-    void Effect()
+    void Effect(Vector3 hitPos)
     {
-        Instantiate(BulletTrailPrefab, firePoint.position, firePoint.rotation);
+        Transform trail = (Transform)Instantiate(BulletTrailPrefab, firePoint.position, firePoint.rotation);
+        LineRenderer lr = trail.GetComponent<LineRenderer>();
+
+        if(lr != null)
+        {
+            lr.SetPosition(0, firePoint.position);
+            lr.SetPosition(1, hitPos);
+        }
+
+        Destroy(trail.gameObject, 0.04f);
+
         Transform clone = (Transform)Instantiate(MuzzleFlashPrefab, firePoint.position, firePoint.rotation);
 
         clone.parent = firePoint;
