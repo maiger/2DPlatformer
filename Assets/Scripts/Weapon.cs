@@ -9,6 +9,7 @@ public class Weapon : MonoBehaviour {
     public LayerMask whatToHit;
 
     public Transform BulletTrailPrefab;
+    public Transform HitPrefab;
     public Transform MuzzleFlashPrefab;
     float timeToSpawnEffect = 0;
     public float effectSpawnRate = 10;
@@ -69,21 +70,24 @@ public class Weapon : MonoBehaviour {
         if (Time.time >= timeToSpawnEffect)
         {
             Vector3 hitPos;
+            Vector3 hitNormal;
 
             if(hit.collider == null)
             {
                 hitPos = (mousePosition - firePointPosition) * 30;
+                hitNormal = new Vector3(9999, 9999, 9999);
             } else
             {
                 hitPos = hit.point;
+                hitNormal = hit.normal;
             }
 
-            Effect(hitPos);
+            Effect(hitPos, hitNormal);
             timeToSpawnEffect = Time.time + 1 / effectSpawnRate;
         }
     }
 
-    void Effect(Vector3 hitPos)
+    void Effect(Vector3 hitPos, Vector3 hitNormal)
     {
         Transform trail = (Transform)Instantiate(BulletTrailPrefab, firePoint.position, firePoint.rotation);
         LineRenderer lr = trail.GetComponent<LineRenderer>();
@@ -95,6 +99,12 @@ public class Weapon : MonoBehaviour {
         }
 
         Destroy(trail.gameObject, 0.04f);
+
+        if(hitNormal != new Vector3(9999, 9999, 9999))
+        {
+            Transform hitParticle =(Transform)Instantiate(HitPrefab, hitPos, Quaternion.FromToRotation(Vector3.right, hitNormal));
+            Destroy(hitParticle.gameObject, 1f);
+        }
 
         Transform clone = (Transform)Instantiate(MuzzleFlashPrefab, firePoint.position, firePoint.rotation);
 
