@@ -20,7 +20,17 @@ public class GameMaster : MonoBehaviour {
     public Transform spawnPrefab;
     public AudioClip respawnAudio;
 
-    public IEnumerator RespawnPlayer()
+    public CameraShake cameraShake;
+
+    private void Start()
+    {
+        if(cameraShake == null)
+        {
+            Debug.LogError("No camera shake referenced in GameMaster");
+        }
+    }
+
+    public IEnumerator _RespawnPlayer()
     {
         AudioSource.PlayClipAtPoint(respawnAudio, new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, Camera.main.transform.position.z));
         yield return new WaitForSeconds(spawnDelay);
@@ -33,11 +43,20 @@ public class GameMaster : MonoBehaviour {
 	public static void KillPlayer(Player player)
     {
         Destroy(player.gameObject);
-        gm.StartCoroutine(gm.RespawnPlayer());
+        gm.StartCoroutine(gm._RespawnPlayer());
     }
 
     public static void KillEnemy(Enemy enemy)
     {
-        Destroy(enemy.gameObject);
+        gm._KillEnemy(enemy);
+    }
+
+    public void _KillEnemy(Enemy _enemy)
+    {
+        Transform _clone = (Transform)Instantiate(_enemy.deathParticles, _enemy.transform.position, Quaternion.identity);
+        Destroy(_clone.gameObject, 5f);
+        cameraShake.Shake(_enemy.shakeAmt, _enemy.shakeLength);
+        Destroy(_enemy.gameObject);
+
     }
 }
